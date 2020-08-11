@@ -1,19 +1,69 @@
 import React, { Component } from 'react';
 import './App.css';
+import DefaultTextInput from './components/DefaultTextInput';
+import CheckMessageIsValid from './components/CheckMessageIsValid';
 
 class App extends Component {
+
+  state = {
+    textValue: '',
+    messageArray: [],
+    isValidMessage: true,
+  }
+
+  handleInputChange = (e) => {
+    const { value } = e.target
+    this.setState({
+      textValue: value,
+    }, () => {
+      const { state } = this
+      this.setState({
+        isValidMessage: state.textValue.length > 5 && state.textValue.length < 15 ? false : true,
+      })
+    })
+  };
+
+  handleClick = () => {
+    const { messageArray, textValue } = this.state
+    this.setState({
+      messageArray: [...messageArray, textValue],
+    }, () => {
+      this.setState({
+        isValidMessage: false,
+        textValue: '',
+      })
+    })
+  }
+
+  handleDelete = (indexToDelete) => {
+    const { messageArray } = this.state
+    const newMessageArray = messageArray.filter((e, index) => {
+      return index !== indexToDelete
+    })
+    this.setState({
+      messageArray: newMessageArray
+    })
+  }
+
   render() {
+    const { textValue, isValidMessage, messageArray } = this.state;
+    let messages = null;
+
+    if (messageArray.length) {
+      messages = messageArray.map((message, index) => (
+        <p key={index} onClick={() => this.handleDelete(index)}>{message}</p>
+      ))
+    }
+
     return (
       <div className="App">
-        <ol>
-          <li>Create an input field (in App component) with a change listener which outputs the length of the entered text below it (e.g. in a paragraph).</li>
-          <li>Create a new component (=> ValidationComponent) which receives the text length as a prop</li>
-          <li>Inside the ValidationComponent, either output "Text too short" or "Text long enough" depending on the text length (e.g. take 5 as a minimum length)</li>
-          <li>Create another component (=> CharComponent) and style it as an inline box (=> display: inline-block, padding: 16px, text-align: center, margin: 16px, border: 1px solid black).</li>
-          <li>Render a list of CharComponents where each CharComponent receives a different letter of the entered text (in the initial input field) as a prop.</li>
-          <li>When you click a CharComponent, it should be removed from the entered text.</li>
-        </ol>
-        <p>Hint: Keep in mind that JavaScript strings are basically arrays!</p>
+        <div>
+          <DefaultTextInput textValue={textValue} onChange={this.handleInputChange} />
+          <button disabled={isValidMessage} onClick={this.handleClick}>Add message</button>
+          <p>Your message length {textValue.length}</p>
+          <CheckMessageIsValid messageLength={textValue.length} />
+          {messages}
+        </div>
       </div>
     );
   }
